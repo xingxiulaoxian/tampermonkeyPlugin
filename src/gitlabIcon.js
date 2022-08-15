@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         gitlab 个人头像
 // @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  try to take over the world!
-// @author       You
+// @version      0.2
+// @description  gitlab没有头像生成一个新的头像
+// @author       YY
 // @match        http://10.252.192.3/**
 // @match        http://git.b2bcsx.com/**
-// @icon         https://www.google.com/s2/favicons?domain=192.3
+// @icon         http://git.b2bcsx.com/assets/favicon-7901bd695fb93edb07975966062049829afb56cf11511236e61bcf425070e36e.png
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/xingxiulaoxian/tampermonkeyPlugin/master/src/gitlabIcon.js
+// @downloadURL    https://raw.githubusercontent.com/xingxiulaoxian/tampermonkeyPlugin/master/src/gitlabIcon.js
 // ==/UserScript==
 
 (function() {
@@ -32,7 +34,7 @@
         return gradient;
     }
 
-    function createNameImg (name, cb) {
+    function createNameImg (name) {
         const canvas = document.createElement('canvas');
         canvas.width = `${WIDTH}`;
         canvas.height = `${WIDTH}`;
@@ -46,10 +48,27 @@
         ctx.textBaseline = "middle";
         ctx.strokeStyle = '#000';
         ctx.strokeText(name, WIDTH / 2, WIDTH / 2);
-        canvas.toBlob((blob) => {
-            cb(URL.createObjectURL(blob))
-        }, 'image/jpeg')
+        // canvas.toBlob((blob) => {
+        //     cb(URL.createObjectURL(blob))
+        // }, 'image/jpeg')
+        return canvas;
     }
+
+    // 优化缓存函数，避免重复创建canvas标签
+    const createNameImgCache = (() => {
+        const list = {};
+        return (name, cb) => {
+            // console.log(list)
+            const _name = `__name__${name}`;
+            if (!list[_name]) {
+                list[_name] = createNameImg(name);
+            }
+            list[_name].toBlob((blob) => {
+
+                cb(URL.createObjectURL(blob))
+            }, 'image/jpeg');
+        }
+    })()
 
 //  会把所有的图标都改成canvas图标
 //     setTimeout(() => {
@@ -64,17 +83,15 @@
 //         })
 //     }, 100)
 
-
+    // 监听所有错误事件，如果事件源是img就触发创建图标
     window.addEventListener('error', (event) => {
         const target = event.target;
         if (target.tagName.toLocaleUpperCase() !== 'IMG') return false;
-        createNameImg(target.title || target.alt, url => {
+        createNameImgCache(target.title || target.alt, url => {
             target.src = url;
-            console.log('捕获到异常：', url, event);
+            // console.log('捕获到异常：', url, event);
             // return console.log('sdddddd', target.title, target)
         });
     }, true);
-
-    // Your code here...
 })();
 
