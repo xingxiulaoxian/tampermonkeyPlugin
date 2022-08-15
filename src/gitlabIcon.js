@@ -70,19 +70,6 @@
         }
     })()
 
-//  会把所有的图标都改成canvas图标
-//     setTimeout(() => {
-//          const [...list] = document.querySelectorAll('.avatar')
-//         console.dir(list)
-//         list.forEach(target => {
-//             createNameImg(target.title || target.alt, url => {
-//                 target.src = url;
-//                 console.log('捕获到异常：', url, event);
-//                 // return console.log('sdddddd', target.title, target)
-//             });
-//         })
-//     }, 100)
-
     // 监听所有错误事件，如果事件源是img就触发创建图标
     window.addEventListener('error', (event) => {
         const target = event.target;
